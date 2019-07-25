@@ -2,18 +2,8 @@
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <sitemap>
-        <loc>https://Jintao-Qu.github.io/post-sitemap.xml</loc>
-        <lastmod>2019-07-25T16:09:43.405Z</lastmod>
-    </sitemap>
-
-    <sitemap>
         <loc>https://Jintao-Qu.github.io/page-sitemap.xml</loc>
         <lastmod>2019-07-25T16:09:43.541Z</lastmod>
-    </sitemap>
-
-    <sitemap>
-        <loc>https://Jintao-Qu.github.io/tag-sitemap.xml</loc>
-        <lastmod>2019-07-25T16:09:43.405Z</lastmod>
     </sitemap>
 
 </sitemapindex>
