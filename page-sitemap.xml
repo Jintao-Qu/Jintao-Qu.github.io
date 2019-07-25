@@ -7,6 +7,13 @@
     </url>
     
     <url>
+        <loc>https://Jintao-Qu.github.io/about/</loc>
+        <lastmod>2019-07-25T17:57:40.201Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
         <loc>https://Jintao-Qu.github.io/tags/</loc>
         <lastmod>2019-07-25T16:09:43.541Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -16,13 +23,6 @@
     <url>
         <loc>https://Jintao-Qu.github.io/archive/</loc>
         <lastmod>2019-07-25T16:09:43.421Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    
-    <url>
-        <loc>https://Jintao-Qu.github.io/about/</loc>
-        <lastmod>2019-07-25T16:09:43.419Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
