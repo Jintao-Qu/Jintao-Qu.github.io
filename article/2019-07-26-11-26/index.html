@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          CentOS 7.3 nginx+uwsgi部署Django项目 - Jintao.io
+        
+    </title>
+
+    <link rel="canonical" href="https://Jintao-Qu.github.io/article/2019-07-26-11-26/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+
+    <link rel="stylesheet" href="/css/donate.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('rticle_headerrticle0.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#doc" title="doc">doc</a>
+                            
+                        </div>
+                        <h1>CentOS 7.3 nginx+uwsgi部署Django项目</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by Jintao Qu on
+                            2019-07-09
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Jintao.io</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="centos-73-nginxuwsgi部署django项目">CentOS 7.3 nginx+uwsgi部署Django项目</h1>
+<p>本地Django项目采用python3.6.5开发，用virtualenv做虚拟环境</p>
+<hr>
+<h3 id="1升级-python365">1.升级 python3.6.5</h3>
+<p>CentOS默认安装python2.7，需要升级python3.6.5</p>
+<h4 id="11下载python365">1.1下载python3.6.5</h4>
+<ol>
+<li>首先安装可能需要的依赖</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;yum install openssl-devel bzip2-devel expat-devel gdbm-devel readline-devel sqlite-devel gcc gcc-c++  openssl-devel libffi-devel python-devel mariadb-devel</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>
+<p>下载、解压、安装python3.6.5</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;tar xvf Python-3.6.5.tar.xz</span><br><span class="line">&gt;&gt;cd Python-3.6.5/</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;./configure</span><br><span class="line">&gt;&gt; make</span><br><span class="line">&gt;&gt;make install</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="12修改默认python版本为365">1.2修改默认python版本为3.6.5</h4>
+<ol>
+<li>
+<p>查看默认python版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;python -V</span><br><span class="line">Python 2.7.5</span><br><span class="line">&gt;&gt;python3 -V</span><br><span class="line">Python 3.6.5</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>将原有软链接备份:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;mv /usr/bin/python /usr/bin/python.bak</span><br></pre></td></tr></table></figure>
+<p>将 python 链接至 python3：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;ln -s /usr/local/bin/python3 /usr/bin/python</span><br></pre></td></tr></table></figure>
+<p>查看默认python版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;python -V</span><br><span class="line">Python 3.6.5</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="13配置yum">1.3配置yum</h4>
+<p>升级 Python 之后，由于将默认的 python 指向了 python3，yum 不能正常使用。</p>
+<p>修改 /usr/bin/yum 和 /usr/libexec/urlgrabber-ext-down ，将 #!/usr/bin/python 改为 	    #!/usr/bin/python2.7，保存退出即可。</p>
+<hr>
+<h3 id="2安装-启动nginx">2.安装、启动nginx</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;yum install nginx</span><br><span class="line">&gt;&gt;systemctl start nginx</span><br></pre></td></tr></table></figure>
+<p>此时访问公网ip显示“Welcome to <strong>nginx</strong>”</p>
+<hr>
+<h3 id="3虚拟环境安装-新建虚拟环境">3.虚拟环境安装、新建虚拟环境</h3>
+<h4 id="31虚拟环境安装">3.1虚拟环境安装</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;pip3 install virtualenv</span><br><span class="line">&gt;&gt;pip3 install virtualenvwrapper</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; workon</span><br><span class="line">-bash: workon: command not found</span><br></pre></td></tr></table></figure>
+<p>发现workon命令无法使用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;vim ~/.bashrc</span><br></pre></td></tr></table></figure>
+<p>在.bashrc中增加两行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export WORKON_HOME=$HOME/.virtualenvs</span><br><span class="line">source ./usr/local/bin/virtualenvwrapper.sh</span><br></pre></td></tr></table></figure>
+<p>export 是virtualenv保存虚拟环境的路径</p>
+<p>source是virtualenvwrapper的系统文件，查找一下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;cd ..</span><br><span class="line">&gt;&gt; find -name &quot;virtualenvwrapper.sh&quot;</span><br><span class="line">./usr/local/bin/virtualenvwrapper.sh</span><br></pre></td></tr></table></figure>
+<p>最后使修改生效：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;source ~/.bashrc</span><br></pre></td></tr></table></figure>
+<h4 id="32新建虚拟环境">3.2新建虚拟环境</h4>
+<ol>
+<li>
+<p>新建虚拟环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;mkvirtualenv pocket-school</span><br></pre></td></tr></table></figure>
+<p>查看已安装的包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school)&gt;&gt;pip list</span><br><span class="line"></span><br><span class="line">Package    Version</span><br><span class="line">---------- -------</span><br><span class="line">pip        19.1.1</span><br><span class="line">setuptools 41.0.1</span><br><span class="line">wheel      0.33.4</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>导出本地requirements.txt</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Microsoft Windows [版本 10.0.17134.829]</span><br><span class="line">(c) 2018 Microsoft Corporation。保留所有权利。</span><br><span class="line"></span><br><span class="line">C:\Users\JinTao&gt;workon pocket-school</span><br><span class="line">(pocket-school) C:\Users\JinTao&gt;pip list</span><br><span class="line">Package     Version</span><br><span class="line">----------- -------</span><br><span class="line">Django      2.2.2</span><br><span class="line">mysqlclient 1.4.2</span><br><span class="line">pip         19.1.1</span><br><span class="line">pytz        2019.1</span><br><span class="line">setuptools  41.0.1</span><br><span class="line">sqlparse    0.3.0</span><br><span class="line">wheel       0.33.4</span><br><span class="line"></span><br><span class="line">(pocket-school) C:\Users\JinTao&gt;pip freeze &gt; requirements.txt</span><br></pre></td></tr></table></figure>
+<p>在本地（C:\Users\JinTao）找到生成的requirements.txt,复制其内容,然后回到putty:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school)&gt;&gt;vim requirements.txt</span><br></pre></td></tr></table></figure>
+<p>粘贴、:wq保存，安装：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school)&gt;&gt;pip install -r requirements.txt</span><br></pre></td></tr></table></figure>
+<p>效果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school) [root@VM_0_13_centos /]# pip list</span><br><span class="line">Package     Version</span><br><span class="line">----------- -------</span><br><span class="line">Django      2.2.2</span><br><span class="line">mysqlclient 1.4.2</span><br><span class="line">pip         19.1.1</span><br><span class="line">pytz        2019.1</span><br><span class="line">setuptools  41.0.1</span><br><span class="line">sqlparse    0.3.0</span><br><span class="line">wheel       0.33.4</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="4安装uwsgi">4.安装uwsgi</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school)&gt;&gt;pip install uwsgi</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="5导入项目文件">5.导入项目文件</h3>
+<p>用WinSCP把项目上传到/root/目录下</p>
+<p>测试一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school) [root@VM_0_13_centos /]# cd ~</span><br><span class="line">(pocket-school) [root@VM_0_13_centos ~]# cd main_service_django/</span><br><span class="line">(pocket-school) [root@VM_0_13_centos main_service_django]# ls -l</span><br><span class="line">total 28</span><br><span class="line">drwxr-xr-x 5 root root 4096 Jul  7 18:32 apps</span><br><span class="line">-rw-r--r-- 1 root root    0 Jun 28 20:07 db.sqlite3</span><br><span class="line">drwxr-xr-x 2 root root 4096 Jul  7 18:32 log</span><br><span class="line">drwxr-xr-x 3 root root 4096 Jul  7 18:32 main_service_django</span><br><span class="line">-rw-r--r-- 1 root root  660 Jun 28 20:07 manage.py</span><br><span class="line">drwxr-xr-x 2 root root 4096 Jul  7 18:32 media</span><br><span class="line">drwxr-xr-x 5 root root 4096 Jul  7 18:32 static</span><br><span class="line">drwxr-xr-x 2 root root 4096 Jul  7 18:32 templates</span><br><span class="line">(pocket-school) [root@VM_0_13_centos main_service_django]# python manage.py runsever</span><br><span class="line">Unknown command: &apos;runsever&apos;. Did you mean runserver?</span><br><span class="line">Type &apos;manage.py help&apos; for usage.</span><br><span class="line">(pocket-school) [root@VM_0_13_centos main_service_django]# python manage.py runserver</span><br><span class="line">Watching for file changes with StatReloader</span><br><span class="line">Performing system checks...</span><br><span class="line"></span><br><span class="line">System check identified no issues (0 silenced).</span><br><span class="line">July 07, 2019 - 10:35:01</span><br><span class="line">Django version 2.2.2, using settings &apos;main_service_django.settings&apos;</span><br><span class="line">Starting development server at http://127.0.0.1:8000/</span><br><span class="line">Quit the server with CONTROL-C.</span><br></pre></td></tr></table></figure>
+<p>测试uwsgi:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">(pocket-school) [root@VM_0_13_centos main_service_django]# uwsgi --http :8000 --module main_service_django.wsgi</span><br><span class="line">*** Starting uWSGI 2.0.18 (64bit) on [Sun Jul  7 18:37:57 2019] ***</span><br><span class="line">compiled with version: 4.8.5 20150623 (Red Hat 4.8.5-36) on 07 July 2019 10:29:05</span><br><span class="line">os: Linux-3.10.0-514.21.1.el7.x86_64 #1 SMP Thu May 25 17:04:51 UTC 2017</span><br><span class="line">nodename: VM_0_13_centos</span><br><span class="line">machine: x86_64</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 2</span><br><span class="line">current working directory: /root/main_service_django</span><br><span class="line">detected binary path: /root/.virtualenvs/pocket-school/bin/uwsgi</span><br><span class="line">uWSGI running as root, you can use --uid/--gid/--chroot options</span><br><span class="line">*** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***</span><br><span class="line">*** WARNING: you are running uWSGI without its master process manager ***</span><br><span class="line">your processes number limit is 15089</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">detected max file descriptor number: 100001</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">uWSGI http bound on :8000 fd 4</span><br><span class="line">spawned uWSGI http 1 (pid: 8152)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:39883 (port auto-assigned) fd 3</span><br><span class="line">uWSGI running as root, you can use --uid/--gid/--chroot options</span><br><span class="line">*** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***</span><br><span class="line">Python version: 3.6.5 (default, Jul  7 2019, 17:49:00)  [GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]</span><br><span class="line">*** Python threads support is disabled. You can enable it with --enable-threads ***</span><br><span class="line">Python main interpreter initialized at 0x1377a80</span><br><span class="line">uWSGI running as root, you can use --uid/--gid/--chroot options</span><br><span class="line">*** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">mapped 72920 bytes (71 KB) for 1 cores</span><br><span class="line">*** Operational MODE: single process ***</span><br><span class="line">WSGI app 0 (mountpoint=&apos;&apos;) ready in 0 seconds on interpreter 0x1377a80 pid: 8151 (default app)</span><br><span class="line">uWSGI running as root, you can use --uid/--gid/--chroot options</span><br><span class="line">*** WARNING: you are running uWSGI as root !!! (use the --uid flag) ***</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI worker 1 (and the only) (pid: 8151, cores: 1)</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="6修改数据库连接">6.修改数据库连接</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;cd ~</span><br><span class="line">&gt;&gt;cd  main_service_django/</span><br><span class="line">&gt;&gt;cd main_service_django/</span><br><span class="line">&gt;&gt;vim settings.py</span><br></pre></td></tr></table></figure>
+<p>修改HOST和PORT为内网连接</p>
+<p>然后切回到上级目录，runserver测试一下</p>
+<hr>
+<h3 id="7配置nginx">7.配置nginx</h3>
+<ol>
+<li>
+<p>新建一个config文件的目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;mkdir config</span><br><span class="line">&gt;&gt;cd config</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>新建uc_nginx.conf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;vim uc_nginx.conf</span><br></pre></td></tr></table></figure>
+<p>配置文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"># the upstream component nginx needs to connect to</span><br><span class="line">upstream django &#123;</span><br><span class="line"># server unix:///path/to/your/mysite/mysite.sock; # for a file socket</span><br><span class="line">server 127.0.0.1:8000; # for a web port socket (we&apos;ll use this first)</span><br><span class="line">&#125;</span><br><span class="line"># configuration of the server</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line"># the port your site will be served on</span><br><span class="line">listen      80;</span><br><span class="line"># the domain name it will serve for</span><br><span class="line">server_name 152.136.127.174 ; # substitute your machine&apos;s IP address or FQDN</span><br><span class="line">charset     utf-8;</span><br><span class="line"></span><br><span class="line"># max upload size</span><br><span class="line">client_max_body_size 75M;   # adjust to taste</span><br><span class="line"></span><br><span class="line"># Django media</span><br><span class="line">location /media  &#123;</span><br><span class="line">    alias /root/main_service_django/media;  # 指向django的media目录</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location /static &#123;</span><br><span class="line">    alias /root/main_service_django/static; # 指向django的static目录</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Finally, send all non-media requests to the Django server.</span><br><span class="line">location / &#123;</span><br><span class="line">    uwsgi_pass  django;</span><br><span class="line">    include     uwsgi_params; # the uwsgi_params file you installed</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>将uc_nginx.conf置为配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;cp uc_nginx.conf /etc/nginx/conf.d/</span><br></pre></td></tr></table></figure>
+<p>重启nginx</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;systemctl restart nginx</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>让nginx做静态文件的代理:</p>
+<p>在settings.py加入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STATIC_ROOT = os.path.join(BASE_DIR, &quot;static/&quot;)</span><br></pre></td></tr></table></figure>
+<p>运行命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python manage.py collectstatic</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="8配置uwsgi">8.配置uwsgi</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;cd config</span><br><span class="line">&gt;&gt;vim uwsgi.ini</span><br></pre></td></tr></table></figure>
+<p>配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># mysite_uwsgi.ini file</span><br><span class="line">    [uwsgi]</span><br><span class="line"></span><br><span class="line">    # Django-related settings</span><br><span class="line">    # the base directory (full path)</span><br><span class="line">    chdir           = /root/main_service_django/</span><br><span class="line">    # Django&apos;s wsgi file</span><br><span class="line">    module          = main_service_django.wsgi</span><br><span class="line">    # the virtualenv (full path)</span><br><span class="line">    # process-related settings</span><br><span class="line">    # master</span><br><span class="line">    master          = true</span><br><span class="line">    # maximum number of worker processes</span><br><span class="line">    processes       = 10</span><br><span class="line">    # the socket (use the full path to be safe</span><br><span class="line">    socket          = 127.0.0.1:8000</span><br><span class="line">    # ... with appropriate permissions - may be needed</span><br><span class="line">    # chmod-socket    = 664</span><br><span class="line">    # clear environment on exit</span><br><span class="line">    vacuum          = true</span><br><span class="line">    virtualenv = /root/.virtualenvs/pocket-school</span><br><span class="line"></span><br><span class="line">    # logto = /tmp/mylog.log</span><br></pre></td></tr></table></figure>
+<p>启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;uwsgi -i uwsgi.ini</span><br><span class="line">&gt;&gt;uwsgi -i uwsgi.ini &amp;</span><br></pre></td></tr></table></figure>
+<p>kill(会自动重启):</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;pkill -f uwsgi</span><br></pre></td></tr></table></figure>
+<h3 id="9最后的一点坑">9.最后的一点坑</h3>
+<ol>
+<li>
+<p>把公网ip添加到 setting.py下的ALLOW_HOST</p>
+</li>
+<li>
+<p>nginx权限问题导致的静态文件丢失：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;vim /etc/nginx/nginx.conf  把user改成root</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;pkill -f nginx</span><br><span class="line">&gt;&gt;nginx</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="10把debug改成false">10.把Debug改成False!</h3>
+<hr>
+<h3 id="11疑难杂症">11.疑难杂症</h3>
+<ol>
+<li>
+<p>查看端口占用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsof -i:8000</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>kill进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kill -9 PID</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="参考资料">参考资料</h3>
+<ul>
+<li><a href="https://www.cnblogs.com/lwf-blog/p/8182975.html" target="_blank" rel="noopener">CentOS7 升级Python2.x到3.x</a></li>
+<li><a href="http://projectsedu.com/2017/08/15/centos7-%E4%B8%8B%E9%80%9A%E8%BF%87nginx-uwsgi%E9%83%A8%E7%BD%B2django%E5%BA%94%E7%94%A8/" target="_blank" rel="noopener">centos7 下通过nginx+uwsgi部署django应用</a></li>
+<li>[详解django中的collectstatic命令以及STATIC_URL、STATIC_ROOT配置](</li>
+</ul>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/article/2019-07-26-1-11/" data-toggle="tooltip" data-placement="top" title="网络流初步">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#centos-73-nginxuwsgi部署django项目"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">CentOS 7.3 nginx+uwsgi&#x90E8;&#x7F72;Django&#x9879;&#x76EE;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#1升级-python365"><span class="toc-nav-number">1.0.1.</span> <span class="toc-nav-text">1.&#x5347;&#x7EA7; python3.6.5</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#11下载python365"><span class="toc-nav-number">1.0.1.1.</span> <span class="toc-nav-text">1.1&#x4E0B;&#x8F7D;python3.6.5</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#12修改默认python版本为365"><span class="toc-nav-number">1.0.1.2.</span> <span class="toc-nav-text">1.2&#x4FEE;&#x6539;&#x9ED8;&#x8BA4;python&#x7248;&#x672C;&#x4E3A;3.6.5</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#13配置yum"><span class="toc-nav-number">1.0.1.3.</span> <span class="toc-nav-text">1.3&#x914D;&#x7F6E;yum</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#2安装-启动nginx"><span class="toc-nav-number">1.0.2.</span> <span class="toc-nav-text">2.&#x5B89;&#x88C5;&#x3001;&#x542F;&#x52A8;nginx</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#3虚拟环境安装-新建虚拟环境"><span class="toc-nav-number">1.0.3.</span> <span class="toc-nav-text">3.&#x865A;&#x62DF;&#x73AF;&#x5883;&#x5B89;&#x88C5;&#x3001;&#x65B0;&#x5EFA;&#x865A;&#x62DF;&#x73AF;&#x5883;</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#31虚拟环境安装"><span class="toc-nav-number">1.0.3.1.</span> <span class="toc-nav-text">3.1&#x865A;&#x62DF;&#x73AF;&#x5883;&#x5B89;&#x88C5;</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#32新建虚拟环境"><span class="toc-nav-number">1.0.3.2.</span> <span class="toc-nav-text">3.2&#x65B0;&#x5EFA;&#x865A;&#x62DF;&#x73AF;&#x5883;</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#4安装uwsgi"><span class="toc-nav-number">1.0.4.</span> <span class="toc-nav-text">4.&#x5B89;&#x88C5;uwsgi</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#5导入项目文件"><span class="toc-nav-number">1.0.5.</span> <span class="toc-nav-text">5.&#x5BFC;&#x5165;&#x9879;&#x76EE;&#x6587;&#x4EF6;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#6修改数据库连接"><span class="toc-nav-number">1.0.6.</span> <span class="toc-nav-text">6.&#x4FEE;&#x6539;&#x6570;&#x636E;&#x5E93;&#x8FDE;&#x63A5;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#7配置nginx"><span class="toc-nav-number">1.0.7.</span> <span class="toc-nav-text">7.&#x914D;&#x7F6E;nginx</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#8配置uwsgi"><span class="toc-nav-number">1.0.8.</span> <span class="toc-nav-text">8.&#x914D;&#x7F6E;uwsgi</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#9最后的一点坑"><span class="toc-nav-number">1.0.9.</span> <span class="toc-nav-text">9.&#x6700;&#x540E;&#x7684;&#x4E00;&#x70B9;&#x5751;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#10把debug改成false"><span class="toc-nav-number">1.0.10.</span> <span class="toc-nav-text">10.&#x628A;Debug&#x6539;&#x6210;False!</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#11疑难杂症"><span class="toc-nav-number">1.0.11.</span> <span class="toc-nav-text">11.&#x7591;&#x96BE;&#x6742;&#x75C7;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-number">1.0.12.</span> <span class="toc-nav-text">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></a></li></ol></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#doc" title="doc">doc</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="http://blog.csdn.net/huwh_" target="_blank">CSDN Blog 胡伟煌</a></li>
+                    
+                        <li><a href="http://dockone.io/people/胡伟煌" target="_blank">DockOne 胡伟煌</a></li>
+                    
+                        <li><a href="https://yq.aliyun.com/u/huweihuang" target="_blank">阿里云栖社区 胡伟煌</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+<!-- chrome Firefox 中文锚点定位失效-->
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+<!-- smooth scroll behavior polyfill  -->
+<script type="text/javascript" src="/js/smoothscroll.js"></script>
+<script>
+        $('#toc').on('click','a',function(a){
+            // var isChrome = window.navigator.userAgent.indexOf("Chrome") !== -1;
+            // console.log(window.navigator.userAgent,isChrome)
+                // if(isChrome) {
+                    // console.log(a.currentTarget.outerHTML);
+                    // console.log($(a.currentTarget).attr("href"));
+                    //跳转到指定锚点
+                    // document.getElementById(a.target.innerText.toLowerCase()).scrollIntoView(true);
+                    document.getElementById($(a.currentTarget).attr("href").replace("#","")).scrollIntoView({behavior: 'smooth' });
+                // }
+        })  
+</script>
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/Jintao-Qu">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Jintao Qu 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.huweihuang.com">胡伟煌</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huweihuang&repo=hexo-theme-huweihuang&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://Jintao-Qu.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'xxx';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://Jintao-Qu.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
